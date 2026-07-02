@@ -1,0 +1,10 @@
+{
+  "name": "flow",
+  "version": "0.1.0",
+  "description": "A minimal agentic pipeline for Claude Code: plan a feature, then have a sub-agent implement it task by task. Inspired by Belmont, reimplemented Claude-only in my own words.",
+  "author": {
+    "name": "Max Golubev"
+  },
+  "license": "MIT",
+  "keywords": ["workflow", "agents", "planning", "orchestration"]
+}

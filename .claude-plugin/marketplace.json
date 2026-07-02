@@ -1,0 +1,17 @@
+{
+  "name": "flow-marketplace",
+  "owner": {
+    "name": "Max Golubev"
+  },
+  "metadata": {
+    "description": "Max's personal Claude Code plugins.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "flow",
+      "source": "./plugins/flow",
+      "description": "Plan a feature, then have a sub-agent implement it task by task."
+    }
+  ]
+}
