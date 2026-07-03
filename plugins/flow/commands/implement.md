@@ -78,12 +78,15 @@ This keeps `CURRENT.md` clean at rest — the real records live in `.flow/archiv
 
 ## Step 5: Update progress and report
 
-1. In `.flow/TASKS.md`, change this task's `[ ]` to `[x]`. Change ONLY this
-   task's checkbox — leave every other line exactly as it is.
-2. Tell the user, briefly:
+1. Check the `## Implementation Log` you just read. If the agent reported the
+   verification as FAILED (or did not pass it), do NOT mark the task done —
+   tell the user it failed, show the reason, and stop so they can decide.
+2. If verification passed, in `.flow/TASKS.md` change this task's `[ ]` to
+   `[x]`. Change ONLY this task's checkbox — leave every other line as it is.
+3. Tell the user, briefly:
 
 ```
-Done: [task id] — [task name]
+Done: [task id] — [task name] (verification passed)
 Archived to .flow/archive/CURRENT-[task id].md
 [one line on what was built]
 ```

@@ -14,7 +14,8 @@ CURRENT file — you do not know about any earlier conversation.
 ## Step 1: Read your context
 
 1. Read `.flow/CURRENT.md`. This tells you the single task to build,
-   its details, and its scope.
+   its details, its scope, and its **Verification** requirement — the check you
+   must pass before this task counts as done.
 2. If the CURRENT file points to `.flow/SPEC.md` or `.flow/TECH_PLAN.md`
    and you need more detail, read those too. Otherwise do not.
 
@@ -33,22 +34,31 @@ touch it. Every line you write must trace to this task.
 - Write the code for the task.
 - Keep changes minimal and focused on the task.
 
-## Step 4: Check your work
+## Step 4: Verify your work (mandatory)
 
-- Run the build or the relevant test if one exists (Bash).
-- If it fails, fix it. Try up to 3 times.
-- If it still fails after 3 attempts, stop and document the problem in the
-  log rather than guessing further.
+You MUST satisfy the task's `Verification` requirement. This is not optional —
+a task is not done until its verification passes.
+
+1. Write a real, runnable check for the Verification requirement (a test file,
+   or a script you can execute with Bash). Prefer leaving a test file behind so
+   the check can be re-run later.
+2. Run it (Bash) and confirm it passes.
+3. If it fails, fix the code and re-run. Try up to 3 times.
+4. If it still fails after 3 attempts, do NOT claim success. Document the
+   failure honestly in the log and stop.
+
+Only continue to Step 5 if the verification actually passed.
 
 ## Step 5: Write the log
 
 Append to the `## Implementation Log` section of `.flow/CURRENT.md`:
 
 ```markdown
-### [task id] — done
+### [task id] — [done | FAILED]
 - Files changed: [list]
 - What I did: [2-3 lines]
-- Verification: [what you ran and the result]
+- Verification requirement: [copy the Verification line from CURRENT.md]
+- Verification result: [the exact command you ran and its PASS/FAIL result]
 - Notes: [anything non-obvious the next agent should know, or "none"]
 ```
 

@@ -19,6 +19,10 @@ Your only goal: turn the user's idea into two files —
 - Only write inside the `.flow/` folder.
 - Ask questions until the plan is concrete. Do not guess at vague points.
 - Get the user's explicit approval BEFORE writing the files.
+- Testing is mandatory and built into every task, not a separate task. Each
+  task that produces code MUST carry a `Verification:` line describing how to
+  prove it works. Do NOT create standalone "write a test" tasks, and do NOT
+  ask whether to include tests — verification is always part of every task.
 
 ## Step 1: Understand the feature
 
@@ -36,7 +40,10 @@ concrete enough to break into tasks.
 
 Summarise, in plain prose, the milestones you propose and the tasks inside
 each. A **milestone** is a meaningful chunk that can be built and checked on
-its own. A **task** is one concrete unit of work inside a milestone.
+its own. A **task** is one concrete unit of work inside a milestone. Every task that
+produces code carries its own `Verification:` line — a concrete, runnable check
+that proves the task works. Verification is an attribute of the task, never a
+separate task.
 
 Ask the user: "Does this breakdown look right, or should I adjust it?"
 
@@ -76,10 +83,13 @@ Status legend: [ ] todo · [>] in progress · [x] done · [v] verified
 
 ## M1: [milestone name]
 - [ ] M1-1: [task name] — [one line on what it involves]
+  - Verification: [a concrete, runnable check that proves this task works]
 - [ ] M1-2: [task name] — [one line]
+  - Verification: [a concrete, runnable check that proves this task works]
 
 ## M2: [milestone name] (depends: M1)
 - [ ] M2-1: [task name] — [one line]
+  - Verification: [a concrete, runnable check that proves this task works]
 ```
 
 ## Step 4: Confirm
