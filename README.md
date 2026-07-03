@@ -71,13 +71,3 @@ script.
 /flow:plan               describe a feature, approve the breakdown
 /flow:implement <slug>   build the next task for that feature (run once per task)
 ```
-
-## Credit
-
-The architecture — a phased plan → implement pipeline where sub-agents
-coordinate through shared markdown state — is inspired by
-[Belmont](https://github.com/blake-simpson/belmont). `flow` is my own
-Claude-only reimplementation, written from scratch to understand the pattern
-and adapt it to my workflow. It is deliberately minimal: two commands and one
-agent, with per-task archiving, versus Belmont's larger multi-agent, multi-tool
-system.
