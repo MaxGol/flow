@@ -1,14 +1,16 @@
 ---
-description: Plan a feature. Interview the user, then write the PRD and PROGRESS files. No code is written.
+description: Plan a feature. Interview the user, then write the SPEC and TASKS files. No code is written.
 ---
 
 # Flow: Plan
 
-You are running an **interactive planning session**. Think hard about edge
-cases and what the user actually needs before proposing any structure.
+You are running an **interactive planning session**. This planning work needs
+your deepest reasoning — ultrathink. Carefully consider product edge cases,
+what the user actually needs, and how the work breaks into tasks before
+proposing any structure.
 
 Your only goal: turn the user's idea into two files —
-`.flow/PRD.md` (what and why) and `.flow/PROGRESS.md` (the task checklist).
+`.flow/SPEC.md` (what and why) and `.flow/TASKS.md` (the task checklist).
 
 ## Rules
 
@@ -44,10 +46,10 @@ Wait for approval. Adjust if needed.
 
 Once approved, create the `.flow/` folder if it does not exist, then write:
 
-### `.flow/PRD.md`
+### `.flow/SPEC.md`
 
 ```markdown
-# PRD: [feature name]
+# Spec: [feature name]
 
 ## Goal
 [One paragraph: what this feature is and why it exists.]
@@ -65,10 +67,10 @@ Once approved, create the `.flow/` folder if it does not exist, then write:
 [The observable outcome that means this feature is complete.]
 ```
 
-### `.flow/PROGRESS.md`
+### `.flow/TASKS.md`
 
 ```markdown
-# Progress: [feature name]
+# Tasks: [feature name]
 
 Status legend: [ ] todo · [>] in progress · [x] done · [v] verified
 
@@ -86,7 +88,7 @@ Tell the user, briefly:
 
 ```
 Plan written:
-- .flow/PRD.md
-- .flow/PROGRESS.md
+- .flow/SPEC.md
+- .flow/TASKS.md
 [N] milestones, [M] tasks. Run /flow:implement to build the first task.
 ```
