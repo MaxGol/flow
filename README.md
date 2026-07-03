@@ -35,13 +35,19 @@ own isolated folder, so working on one feature never disturbs another:
 - **SPEC.md** — the plan: goal, users, requirements, definition of done. Written
   once during planning, then read-only. It is the stable source of intent.
 - **TASKS.md** — the checklist of milestones and tasks. The single source of
-  truth for what is left to build. The orchestrator ticks boxes here as tasks
-  complete (`[ ]` todo, `[x]` done).
+  truth for what is left to build. The orchestrator moves boxes through
+  `[ ]` todo → `[>]` in progress → `[x]` done. `[>]` is set right before the
+  sub-agent is spawned, and left in place if the run crashes or verification
+  fails — so the next `/flow:implement` resumes that same task first instead
+  of silently moving on.
 - **CURRENT.md** — disposable scratch context for the one task being built right
   now. The orchestrator writes the task into it; the sub-agent reads it and logs
-  its work back. At the end of each run it is archived and reset to clean.
-- **archive/** — one file per completed task, holding that task's full context
-  and implementation log. This is the durable history.
+  its work back. At the end of each run it is archived and reset to clean,
+  whether the task passed or failed.
+- **archive/** — one file per attempt, holding that attempt's full context and
+  implementation log. A success is saved as `CURRENT-<task-id>.md`; a failure
+  is saved as `CURRENT-<task-id>-failed-<n>.md` so it is never overwritten by
+  a later retry. This is the durable history.
 
 ## Why it is built this way
 
