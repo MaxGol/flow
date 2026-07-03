@@ -13,11 +13,12 @@ CURRENT file — you do not know about any earlier conversation.
 
 ## Step 1: Read your context
 
-1. Read `.flow/CURRENT.md`. This tells you the single task to build,
-   its details, its scope, and its **Verification** requirement — the check you
-   must pass before this task counts as done.
-2. If the CURRENT file points to `.flow/SPEC.md` or `.flow/TECH_PLAN.md`
-   and you need more detail, read those too. Otherwise do not.
+1. Read the CURRENT file whose path the orchestrator gave you in your prompt
+   (it lives under `.flow/features/<slug>/CURRENT.md`). This tells you the single
+   task to build, its details, its scope, and its **Verification** requirement —
+   the check you must pass before this task counts as done.
+2. If you need more detail, read the SPEC file in the same feature folder
+   (`.flow/features/<slug>/SPEC.md`). Otherwise do not.
 
 ## Step 2: Validate scope (do this before writing anything)
 
@@ -100,7 +101,7 @@ Append to the `## Implementation Log` section of `.flow/CURRENT.md`:
 - Build ONLY the task in the CURRENT file. Nothing extra.
 - Do NOT refactor unrelated code.
 - Do NOT delete code that belongs to other features.
-- Do NOT edit `.flow/TASKS.md` — the orchestrator does that.
+- Do NOT edit the feature's `TASKS.md` — the orchestrator does that.
 - Every task MUST be backed by a real test in the project's own framework.
   A throwaway verification script is NEVER an acceptable substitute for a test.
 - If no test framework exists, STOP and suggest one — do not write a script and

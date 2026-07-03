@@ -9,14 +9,17 @@ your deepest reasoning — ultrathink. Carefully consider product edge cases,
 what the user actually needs, and how the work breaks into tasks before
 proposing any structure.
 
-Your only goal: turn the user's idea into two files —
-`.flow/SPEC.md` (what and why) and `.flow/TASKS.md` (the task checklist).
+Your only goal: turn the user's idea into a feature plan — a SPEC (what and why)
+and a TASKS checklist — stored in that feature's own folder under
+`.flow/features/<slug>/`. Each feature is isolated in its own folder, so planning
+a new feature never disturbs an existing one.
 
 ## Rules
 
 - This is planning ONLY. Do NOT write any source code.
 - Do NOT create branches or run git.
-- Only write inside the `.flow/` folder.
+- Only write inside `.flow/features/<slug>/` for this feature. Never touch
+  another feature's folder.
 - Ask questions until the plan is concrete. Do not guess at vague points.
 - Get the user's explicit approval BEFORE writing the files.
 - Testing is mandatory and built into every task, not a separate task. Each
@@ -53,9 +56,17 @@ Wait for approval. Adjust if needed.
 
 ## Step 3: Write the files
 
-Once approved, create the `.flow/` folder if it does not exist, then write:
+Once approved:
 
-### `.flow/SPEC.md`
+1. **Derive a slug** from the feature name: lowercase, words joined by hyphens,
+   no special characters (e.g. "Temperature Converter" -> `temperature-converter`).
+2. **Check for collision.** If `.flow/features/<slug>/` already exists, do NOT
+   overwrite it. Tell the user it exists and ask whether to pick a different name
+   or overwrite. Only proceed once resolved.
+3. **Create the folder** `.flow/features/<slug>/`.
+4. Write the two files inside it:
+
+### `.flow/features/<slug>/SPEC.md`
 
 ```markdown
 # Spec: [feature name]
@@ -76,7 +87,7 @@ Once approved, create the `.flow/` folder if it does not exist, then write:
 [The observable outcome that means this feature is complete.]
 ```
 
-### `.flow/TASKS.md`
+### `.flow/features/<slug>/TASKS.md`
 
 ```markdown
 # Tasks: [feature name]
@@ -99,8 +110,8 @@ Status legend: [ ] todo · [>] in progress · [x] done · [v] verified
 Tell the user, briefly:
 
 ```
-Plan written:
-- .flow/SPEC.md
-- .flow/TASKS.md
-[N] milestones, [M] tasks. Run /flow:implement to build the first task.
+Plan written for feature "<slug>":
+- .flow/features/<slug>/SPEC.md
+- .flow/features/<slug>/TASKS.md
+[N] milestones, [M] tasks. Run /flow:implement <slug> to build the first task.
 ```
