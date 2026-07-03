@@ -34,31 +34,64 @@ touch it. Every line you write must trace to this task.
 - Write the code for the task.
 - Keep changes minimal and focused on the task.
 
-## Step 4: Verify your work (mandatory)
+## Step 4: Write a proper test (mandatory)
 
-You MUST satisfy the task's `Verification` requirement. This is not optional —
-a task is not done until its verification passes.
+You MUST back this task with a **real test in the project's own test framework**,
+then run it. A test is not optional, and a throwaway script is NOT acceptable.
+Never write an ad-hoc "run it and print PASS" script in place of a test.
 
-1. Write a real, runnable check for the Verification requirement (a test file,
-   or a script you can execute with Bash). Prefer leaving a test file behind so
-   the check can be re-run later.
-2. Run it (Bash) and confirm it passes.
-3. If it fails, fix the code and re-run. Try up to 3 times.
-4. If it still fails after 3 attempts, do NOT claim success. Document the
-   failure honestly in the log and stop.
+### 4a. Detect the existing test framework (do this first)
 
-Only continue to Step 5 if the verification actually passed.
+Inspect the project to find how it already tests code. Look for:
+
+- **JS / TS:** `package.json` `devDependencies` and `scripts.test`; config files
+  like `jest.config.*`, `vitest.config.*`, `karma.conf.*`; existing test files
+  such as `*.test.ts`, `*.spec.ts`, `__tests__/`. For Angular, that usually
+  means Karma + Jasmine (`*.spec.ts`).
+- **Python:** `pytest` in `pyproject.toml` / `requirements*.txt`; a `pytest.ini`
+  / `tox.ini` / `[tool.pytest]` section; an existing `tests/` folder or
+  `test_*.py` files.
+- Any other language: find the conventional runner and existing test layout.
+
+**Match what already exists** — the same runner, the same folder, the same file
+naming, and the same style as the tests already in the repo. Your test must look
+like it was written by the same team.
+
+### 4b. If a framework exists → write and run a real test
+
+1. Write a proper test file for this task's `Verification` requirement, in the
+   detected framework, in the conventional location, following existing patterns.
+2. Run it with the project's own test command (e.g. `npm test`, `npx vitest run`,
+   `pytest`, `ng test --watch=false`).
+3. If it fails, fix the code and re-run. Up to 3 attempts.
+4. If it still fails after 3 attempts, do NOT claim success — record the failure
+   in the log and stop.
+
+### 4c. If NO framework is found → stop and suggest one
+
+Do NOT write a script. Do NOT guess or silently install anything. Instead:
+
+1. Stop before marking the task done.
+2. In the log, record the task as **BLOCKED (no test framework)**.
+3. State clearly that no test runner was detected, and recommend the standard
+   choice for this stack (for example: `pytest` for Python, `vitest` for a
+   plain JS/TS project, Karma + Jasmine for Angular), with the one command to
+   install it. Let the user decide.
+
+Only continue to Step 5 if a real test was written AND it passed.
 
 ## Step 5: Write the log
 
 Append to the `## Implementation Log` section of `.flow/CURRENT.md`:
 
 ```markdown
-### [task id] — [done | FAILED]
-- Files changed: [list]
+### [task id] — [done | FAILED | BLOCKED (no test framework)]
+- Files changed: [list, including the test file you added]
 - What I did: [2-3 lines]
+- Test framework used: [e.g. pytest / vitest / karma+jasmine, or "NONE FOUND"]
+- Test file: [path to the test you wrote]
 - Verification requirement: [copy the Verification line from CURRENT.md]
-- Verification result: [the exact command you ran and its PASS/FAIL result]
+- Test result: [the exact test command you ran and its PASS/FAIL result]
 - Notes: [anything non-obvious the next agent should know, or "none"]
 ```
 
@@ -68,4 +101,8 @@ Append to the `## Implementation Log` section of `.flow/CURRENT.md`:
 - Do NOT refactor unrelated code.
 - Do NOT delete code that belongs to other features.
 - Do NOT edit `.flow/TASKS.md` — the orchestrator does that.
+- Every task MUST be backed by a real test in the project's own framework.
+  A throwaway verification script is NEVER an acceptable substitute for a test.
+- If no test framework exists, STOP and suggest one — do not write a script and
+  do not silently install anything.
 - Do NOT mark anything verified.
