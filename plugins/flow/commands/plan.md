@@ -30,7 +30,15 @@ a new feature never disturbs an existing one.
 
 ## Step 1: Understand the feature
 
-The user will describe a feature. Ask focused questions until you understand:
+First, check whether a spike already exists for this work. If
+`.flow/features/<slug>/SPIKE.md` exists (the slug may be given, or infer it from
+the feature name), READ IT. It contains prior investigation — what exists,
+the options, the risks, and the decisions the user was asked to make. Use it as
+your starting context and confirm with the user which decisions they have made,
+rather than re-asking everything from scratch.
+
+The user will describe a feature (and may reference the spike). Ask focused
+questions until you understand:
 
 - What the feature does, and who it is for.
 - What "done" looks like (the observable outcome).

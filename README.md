@@ -4,10 +4,16 @@ A minimal agentic development pipeline for Claude Code.
 
 `flow` breaks feature work into two phases: **plan**, then **implement**.
 
-## The two commands
+## The commands
 
-- **`/flow:plan`** — an interactive session that turns a feature idea into a
-  written plan. It interviews you about scope, edge cases, and what "done"
+- **`/flow:spike <feature-slug>`** — investigate a vague or unfamiliar problem
+  *before* planning it. It reads the codebase (and may search the web), then
+  writes a findings document (SPIKE.md): what already exists, the options, the
+  risks, and the decisions you must make. It writes no code and no plan — it
+  turns "vague" into "well-defined enough to plan". Optional; skip it when the
+  problem is already clear.
+- **`/flow:plan <feature-slug>`** — an interactive session that turns a feature
+  idea (or the answers to a spike) into a written plan. It interviews you about scope, edge cases, and what "done"
   means, then writes the SPEC and TASKS files. No code is written in this phase.
 - **`/flow:implement <feature-slug>`** — the orchestrator. It reads that
   feature's TASKS checklist, picks the next pending task, writes that task's
@@ -24,6 +30,7 @@ own isolated folder, so working on one feature never disturbs another:
 .flow/
   features/
     <feature-slug>/
+      SPIKE.md             investigation findings & decisions (written by /flow:spike, optional)
       SPEC.md              what & why — the requirements (written by /flow:plan)
       TASKS.md             the task checklist, with [ ] / [x] state
       CURRENT.md           scratch context for the active task (reset to clean between runs)
@@ -35,19 +42,13 @@ own isolated folder, so working on one feature never disturbs another:
 - **SPEC.md** — the plan: goal, users, requirements, definition of done. Written
   once during planning, then read-only. It is the stable source of intent.
 - **TASKS.md** — the checklist of milestones and tasks. The single source of
-  truth for what is left to build. The orchestrator moves boxes through
-  `[ ]` todo → `[>]` in progress → `[x]` done. `[>]` is set right before the
-  sub-agent is spawned, and left in place if the run crashes or verification
-  fails — so the next `/flow:implement` resumes that same task first instead
-  of silently moving on.
+  truth for what is left to build. The orchestrator ticks boxes here as tasks
+  complete (`[ ]` todo, `[x]` done).
 - **CURRENT.md** — disposable scratch context for the one task being built right
   now. The orchestrator writes the task into it; the sub-agent reads it and logs
-  its work back. At the end of each run it is archived and reset to clean,
-  whether the task passed or failed.
-- **archive/** — one file per attempt, holding that attempt's full context and
-  implementation log. A success is saved as `CURRENT-<task-id>.md`; a failure
-  is saved as `CURRENT-<task-id>-failed-<n>.md` so it is never overwritten by
-  a later retry. This is the durable history.
+  its work back. At the end of each run it is archived and reset to clean.
+- **archive/** — one file per completed task, holding that task's full context
+  and implementation log. This is the durable history.
 
 ## Why it is built this way
 
@@ -74,6 +75,17 @@ script.
 ## Usage
 
 ```
-/flow:plan               describe a feature, approve the breakdown
+/flow:spike <slug>       investigate a vague problem, surface the decisions (optional)
+/flow:plan <slug>        describe a feature (or answer the spike), approve the breakdown
 /flow:implement <slug>   build the next task for that feature (run once per task)
 ```
+
+## Credit
+
+The architecture — a phased plan → implement pipeline where sub-agents
+coordinate through shared markdown state — is inspired by
+[Belmont](https://github.com/blake-simpson/belmont). `flow` is my own
+Claude-only reimplementation, written from scratch to understand the pattern
+and adapt it to my workflow. It is deliberately minimal: a few commands and one
+agent, with per-task archiving, versus Belmont's larger multi-agent, multi-tool
+system.
