@@ -2,7 +2,7 @@
 
 A minimal agentic development pipeline for Claude Code.
 
-`flow` breaks feature work into two phases: **plan**, then **implement**.
+`flow` breaks feature work into phases: **plan**, **implement**, then **verify**.
 
 ## The commands
 
@@ -20,6 +20,13 @@ A minimal agentic development pipeline for Claude Code.
   context into CURRENT, and spawns a sub-agent to write the code and a real test.
   When the agent finishes, the orchestrator archives the task's record and ticks
   the checkbox.
+- **`/flow:verify <feature-slug>`** — independently checks that completed
+  (`[x]`) tasks actually satisfy the SPEC. It spawns a fresh agent that did
+  *not* build the code, which re-runs the tests and confirms every acceptance
+  criterion, writing its verdict to VERIFY.md. On a pass, tasks move from
+  `[x]` to `[v]` (verified). On a failure, nothing is fixed automatically —
+  the orchestrator adds new `[ ]` remediation tasks for `/flow:implement` to
+  pick up.
 
 ## State files
 
@@ -32,8 +39,9 @@ own isolated folder, so working on one feature never disturbs another:
     <feature-slug>/
       SPIKE.md             investigation findings & decisions (written by /flow:spike, optional)
       SPEC.md              what & why — the requirements (written by /flow:plan)
-      TASKS.md             the task checklist, with [ ] / [x] state
+      TASKS.md             the task checklist, with [ ] / [x] / [v] state
       CURRENT.md           scratch context for the active task (reset to clean between runs)
+      VERIFY.md            latest verification verdict (written by /flow:verify)
       archive/
         CURRENT-M1-1.md    a permanent record of each completed task
         CURRENT-M1-2.md
@@ -43,10 +51,12 @@ own isolated folder, so working on one feature never disturbs another:
   once during planning, then read-only. It is the stable source of intent.
 - **TASKS.md** — the checklist of milestones and tasks. The single source of
   truth for what is left to build. The orchestrator ticks boxes here as tasks
-  complete (`[ ]` todo, `[x]` done).
+  complete (`[ ]` todo, `[x]` built, `[v]` independently verified).
 - **CURRENT.md** — disposable scratch context for the one task being built right
   now. The orchestrator writes the task into it; the sub-agent reads it and logs
   its work back. At the end of each run it is archived and reset to clean.
+- **VERIFY.md** — the verification agent's verdict: PASS/FAIL for the test run
+  and for each SPEC acceptance criterion. Overwritten by each `/flow:verify` run.
 - **archive/** — one file per completed task, holding that task's full context
   and implementation log. This is the durable history.
 
@@ -64,6 +74,12 @@ writes a proper test, and runs it before the task can be marked done. If no test
 framework exists, it stops and suggests one rather than writing a throwaway
 script.
 
+Verification follows the same principle: the agent that builds a task should
+not be the one that grades it. `/flow:verify` always spawns a fresh agent with
+no memory of the build conversation, so its check of the SPEC's acceptance
+criteria is genuinely independent rather than the builder re-checking its own
+work.
+
 ## Install
 
 ```
@@ -78,6 +94,7 @@ script.
 /flow:spike <slug>       investigate a vague problem, surface the decisions (optional)
 /flow:plan <slug>        describe a feature (or answer the spike), approve the breakdown
 /flow:implement <slug>   build the next task for that feature (run once per task)
+/flow:verify <slug>      independently confirm completed tasks meet the SPEC
 ```
 
 ## Credit
