@@ -1,5 +1,6 @@
 ---
-description: Plan a feature. Interview the user, then write the SPEC and TASKS files. No code is written.
+description: Plan a feature. Interview the user, then write the SPEC (with acceptance criteria) and TASKS files. No code is written.
+argument-hint: [feature-slug]
 ---
 
 # Flow: Plan
@@ -27,6 +28,10 @@ a new feature never disturbs an existing one.
   behaviour a real test must confirm (in the project's own test framework).
   Do NOT create standalone "write a test" tasks, and do NOT ask whether to
   include tests — a proper test is always part of every task.
+- The SPEC MUST carry a numbered `## Acceptance criteria` list. These are
+  what `/flow:verify` checks one by one, so each must be observable and
+  testable from outside ("POST /x with a bad token returns 401"), not a
+  restatement of a requirement ("auth works").
 
 ## Step 1: Understand the feature
 
@@ -50,13 +55,15 @@ concrete enough to break into tasks.
 
 ## Step 2: Propose the breakdown
 
-Summarise, in plain prose, the milestones you propose and the tasks inside
-each. A **milestone** is a meaningful chunk that can be built and checked on
+Summarise, in plain prose, the acceptance criteria you propose for the SPEC,
+then the milestones and the tasks inside each. A **milestone** is a meaningful chunk that can be built and checked on
 its own. A **task** is one concrete unit of work inside a milestone. Every task that
 produces code carries its own `Verification:` line — the behaviour that a real
 test (in the project's existing test framework) must confirm. Verification is an
 attribute of the task, never a separate task, and is always a proper test rather
-than an ad-hoc script.
+than an ad-hoc script. Where a task is what makes an acceptance criterion true,
+say so (`covers: AC2`) so the verify step can trace criteria back to tasks.
+Every acceptance criterion should be covered by at least one task.
 
 Ask the user: "Does this breakdown look right, or should I adjust it?"
 
@@ -91,8 +98,16 @@ Once approved:
 ## Out of scope
 [What this feature explicitly does NOT cover.]
 
+## Acceptance criteria
+[Numbered, observable, testable statements. /flow:verify confirms each one
+independently, so write them as checks, not goals.]
+1. AC1: [e.g. "GET /api/convert?c=100 returns {"f": 212} with status 200"]
+2. AC2: [e.g. "a non-numeric value returns 400 and a JSON error body"]
+3. AC3: [...]
+
 ## Definition of done
-[The observable outcome that means this feature is complete.]
+[The observable outcome that means this feature is complete — usually "all
+acceptance criteria pass and the existing test suite stays green".]
 ```
 
 ### `.flow/features/<slug>/TASKS.md`
@@ -105,12 +120,15 @@ Status legend: [ ] todo · [>] in progress · [x] done · [v] verified
 ## M1: [milestone name]
 - [ ] M1-1: [task name] — [one line on what it involves]
   - Verification: [the behaviour a real test must confirm — e.g. "getX() returns only valid values and varies across calls"]
+  - covers: [AC ids this task makes true, e.g. AC1 — or omit if none]
 - [ ] M1-2: [task name] — [one line]
-  - Verification: [the behaviour a real test must confirm — e.g. "getX() returns only valid values and varies across calls"]
+  - Verification: [the behaviour a real test must confirm]
+  - covers: [AC2]
 
 ## M2: [milestone name] (depends: M1)
 - [ ] M2-1: [task name] — [one line]
-  - Verification: [the behaviour a real test must confirm — e.g. "getX() returns only valid values and varies across calls"]
+  - Verification: [the behaviour a real test must confirm]
+  - covers: [AC3]
 ```
 
 ## Step 4: Confirm
@@ -121,5 +139,5 @@ Tell the user, briefly:
 Plan written for feature "<slug>":
 - .flow/features/<slug>/SPEC.md
 - .flow/features/<slug>/TASKS.md
-[N] milestones, [M] tasks. Run /flow:implement <slug> to build the first task.
+[N] milestones, [M] tasks, [K] acceptance criteria. Run /flow:implement <slug> to build the first task.
 ```

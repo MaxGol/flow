@@ -5,13 +5,13 @@
   },
   "metadata": {
     "description": "Max's personal Claude Code plugins.",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "plugins": [
     {
       "name": "flow",
       "source": "./plugins/flow",
-      "description": "Plan a feature, then have a sub-agent implement it task by task."
+      "description": "Spike, plan, implement task by task (each task backed by a real test), then verify independently against the SPEC."
     }
   ]
 }

@@ -1,10 +1,17 @@
 {
   "name": "flow",
-  "version": "0.1.0",
-  "description": "A minimal agentic pipeline for Claude Code: plan a feature, then have a sub-agent implement it task by task. Inspired by Belmont, reimplemented Claude-only in my own words.",
+  "version": "0.2.0",
+  "description": "A minimal agentic pipeline for Claude Code: spike, plan, implement task by task with a real test per task, then verify independently against the SPEC. Inspired by Belmont, reimplemented Claude-only.",
   "author": {
     "name": "Max Golubev"
   },
   "license": "MIT",
-  "keywords": ["workflow", "agents", "planning", "orchestration"]
+  "keywords": [
+    "workflow",
+    "agents",
+    "planning",
+    "orchestration",
+    "testing",
+    "verification"
+  ]
 }
