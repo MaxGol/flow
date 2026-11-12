@@ -1,6 +1,7 @@
 ---
 description: Plan a feature. Interview the user, then write the SPEC (with acceptance criteria) and TASKS files. No code is written.
 argument-hint: [feature-slug]
+allowed-tools: Read, Edit(.flow/**)
 ---
 
 # Flow: Plan
@@ -32,6 +33,34 @@ a new feature never disturbs an existing one.
   what `/flow:verify` checks one by one, so each must be observable and
   testable from outside ("POST /x with a bad token returns 401"), not a
   restatement of a requirement ("auth works").
+- The SPEC MUST carry a `## Commands` section with the exact Test, Single
+  test, Type-check and Build commands. The implementation and verification
+  agents run these commands exactly as written and nothing else, so each one
+  must run from the project root with no `cd`. Where a command needs a
+  subdirectory, use the tool's own directory flag instead (e.g.
+  `pnpm -C frontend test`, `npm --prefix frontend test`,
+  `pytest backend/tests`). Write "none" for Single test, Type-check or Build
+  when the project has no such command.
+
+## Tool rules
+
+Follow these rules for every tool call. They keep the session free of
+unnecessary permission prompts, and they apply in every step below.
+
+1. **Reading:** read files only with Read. Never use `cat`, `sed`, `head` or
+   `tail` through Bash.
+2. **Searching:** search, list and check that files exist only with single
+   read-only search commands: `grep -rn` or `grep -rl`, `ls`, and `find`
+   without `-exec` or `-delete`. Quote patterns, use literal paths inside the
+   project, and never add `cd`, `;`, `&&`, pipes or variables. For example:
+   `grep -rn "vitest" package.json` or `find . -name "pyproject.toml"`.
+3. **Changing files:** change `.flow` files only with Edit or Write. Never
+   use heredocs, `cat >`, `sed -i`, `cp`, `mv` or interpreter scripts to
+   create, change, copy or move a file.
+4. **Bash:** apart from the search commands in rule 2, use Bash only for
+   simple one-off commands (for example `node --version`). Run one command
+   per call, with no `cd`, `;`, `&&`, pipes or shell variables. These
+   one-off commands go through the normal permission flow.
 
 ## Step 1: Understand the feature
 
@@ -53,6 +82,19 @@ questions until you understand:
 Ask a few questions at a time, not a wall. Stop asking once the picture is
 concrete enough to break into tasks.
 
+Then work out the project's commands for the SPEC's `## Commands` section by
+reading the project's config yourself — for example `package.json` scripts,
+`pyproject.toml`, `pytest.ini`, `Makefile`, `angular.json`, `tsconfig.json`,
+`Cargo.toml` or `go.mod` — and the existing test files. You need:
+
+- **Test:** the command that runs the whole test suite.
+- **Single test:** the command that runs one test file, with a `{file}`
+  placeholder where the file path goes — or "none".
+- **Type-check:** the type-check command — or "none".
+- **Build:** the build command — or "none".
+
+Each must run from the project root with no `cd` (see Rules).
+
 ## Step 2: Propose the breakdown
 
 Summarise, in plain prose, the acceptance criteria you propose for the SPEC,
@@ -64,6 +106,11 @@ attribute of the task, never a separate task, and is always a proper test rather
 than an ad-hoc script. Where a task is what makes an acceptance criterion true,
 say so (`covers: AC2`) so the verify step can trace criteria back to tasks.
 Every acceptance criterion should be covered by at least one task.
+
+Also show the Test, Single test, Type-check and Build commands you worked out
+from the project config, and ask the user to confirm or correct them as part
+of the breakdown. If the project has no test runner, say so here and agree
+with the user on which one to use before writing the files.
 
 Ask the user: "Does this breakdown look right, or should I adjust it?"
 
@@ -97,6 +144,17 @@ Once approved:
 
 ## Out of scope
 [What this feature explicitly does NOT cover.]
+
+## Commands
+[The exact commands the implementation and verification agents run, as
+confirmed by the user. Each runs from the project root as written, with no
+`cd`; use the tool's own directory flag where needed (e.g.
+`pnpm -C frontend test`). Write "none" when the project has no such command.]
+Run from the project root.
+- Test: [whole test suite, e.g. `npm test`]
+- Single test: [one test file, with a `{file}` placeholder, e.g. `npx vitest run {file}` — or "none"]
+- Type-check: [e.g. `npx tsc --noEmit` — or "none"]
+- Build: [e.g. `npm run build` — or "none"]
 
 ## Acceptance criteria
 [Numbered, observable, testable statements. /flow:verify confirms each one

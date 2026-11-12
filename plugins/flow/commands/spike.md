@@ -1,6 +1,7 @@
 ---
 description: Investigate a vague or unfamiliar problem before planning it. Produces a findings document (SPIKE.md) with options, risks, and the decisions you must make. Writes no code and no plan.
 argument-hint: <feature-slug>
+allowed-tools: Read, Edit(.flow/**)
 ---
 
 # Flow: Spike
@@ -13,6 +14,26 @@ make before the work can be planned.
 
 You produce ONE output: a `SPIKE.md` findings document. You do NOT write code,
 tests, a SPEC, or a task list. You do NOT pick an approach.
+
+## Tool rules
+
+Follow these rules for every tool call. They keep the session free of
+unnecessary permission prompts, and they apply in every step below.
+
+1. **Reading:** read files only with Read. Never use `cat`, `sed`, `head` or
+   `tail` through Bash.
+2. **Searching:** search, list and check that files exist only with single
+   read-only search commands: `grep -rn` or `grep -rl`, `ls`, and `find`
+   without `-exec` or `-delete`. Quote patterns, use literal paths inside the
+   project, and never add `cd`, `;`, `&&`, pipes or variables. For example:
+   `grep -rn "stripe" package.json` or `find . -name "pyproject.toml"`.
+3. **Changing files:** change `.flow` files only with Edit or Write. Never
+   use heredocs, `cat >`, `sed -i`, `cp`, `mv` or interpreter scripts to
+   create, change, copy or move a file.
+4. **Bash:** apart from the search commands in rule 2, use Bash only for
+   simple one-off commands (for example `node --version`). Run one command
+   per call, with no `cd`, `;`, `&&`, pipes or shell variables. These
+   one-off commands go through the normal permission flow.
 
 ## Step 0: Identify the feature
 

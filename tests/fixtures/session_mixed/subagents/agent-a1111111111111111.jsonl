@@ -1,0 +1,8 @@
+{"type":"user","uuid":"s1u1","isSidechain":true,"agentId":"a1111111111111111","origin":null,"message":{"role":"user","content":"Read CURRENT.md"}}
+{"type":"assistant","uuid":"s1a1","isSidechain":true,"message":{"role":"assistant","content":[{"type":"tool_use","id":"toolu_sub_impl_bash","name":"Bash","input":{"command":"python3 -m unittest discover -s tests","description":"Run tests"}}]}}
+{"type":"user","uuid":"s1r1","isSidechain":true,"origin":null,"message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_sub_impl_bash","content":"OK"}]},"permissionDecision":{"decision":"accept","source":"user_temporary"}}
+{"type":"assistant","uuid":"s1a2","isSidechain":true,"message":{"role":"assistant","content":[{"type":"tool_use","id":"toolu_sub_impl_write","name":"Write","input":{"file_path":"/repo/src/auto.py","content":"x = 1\n"}}]}}
+{"type":"user","uuid":"s1r2","isSidechain":true,"origin":null,"message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_sub_impl_write","content":"ok"}]},"permissionDecision":{"decision":"accept","source":"config","reasonType":"classifier"}}
+not json either
+{"type":"assistant","uuid":"s1a3","isSidechain":true,"message":{"role":"assistant","content":[{"type":"tool_use","id":"toolu_sub_impl_edit","name":"Edit","input":{"file_path":"/repo/src/rejected.py","old_string":"a","new_string":"b"}}]}}
+{"type":"user","uuid":"s1r3","isSidechain":true,"origin":null,"message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_sub_impl_edit","content":"rejected"}]},"permissionDecision":{"decision":"reject","source":"user_reject"}}

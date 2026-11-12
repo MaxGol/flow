@@ -1,0 +1,4 @@
+{"type":"user","uuid":"n01","origin":{"kind":"human"},"message":{"role":"user","content":"<command-message>flow:plan</command-message>\n<command-name>/flow:plan</command-name>\n<command-args>something</command-args>"}}
+{"type":"assistant","uuid":"n02","message":{"role":"assistant","content":[{"type":"tool_use","id":"toolu_norun_bash","name":"Bash","input":{"command":"echo planning","description":"Plan"}}]}}
+{"type":"user","uuid":"n03","origin":null,"message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_norun_bash","content":"planning"}]},"permissionDecision":{"decision":"accept","source":"user_temporary"}}
+{"type":"user","uuid":"n04","origin":{"kind":"human"},"message":{"role":"user","content":"Mentioning /flow:implement in plain text does not start a run."}}

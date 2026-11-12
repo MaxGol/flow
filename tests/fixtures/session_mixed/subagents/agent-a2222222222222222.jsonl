@@ -1,0 +1,3 @@
+{"type":"user","uuid":"s2u1","isSidechain":true,"agentId":"a2222222222222222","origin":null,"message":{"role":"user","content":"Look around"}}
+{"type":"assistant","uuid":"s2a1","isSidechain":true,"message":{"role":"assistant","content":[{"type":"tool_use","id":"toolu_sub_outside_bash","name":"Bash","input":{"command":"echo outside-subagent","description":"Outside run"}}]}}
+{"type":"user","uuid":"s2r1","isSidechain":true,"origin":null,"message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"toolu_sub_outside_bash","content":"outside-subagent"}]},"permissionDecision":{"decision":"accept","source":"user_temporary"}}
