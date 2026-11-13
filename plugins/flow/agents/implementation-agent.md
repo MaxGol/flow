@@ -19,11 +19,12 @@ prompts, and they apply in every step below.
 
 1. **Reading and searching:** read files only with Read. Never use `cat`,
    `sed`, `head` or `tail` through Bash. Search, list and check that files
-   exist only with single read-only search commands: `grep -rn` or `grep -rl`,
-   `ls`, and `find` without `-exec` or `-delete`. Quote patterns, use literal
-   paths inside the project, and never add `cd`, `;`, `&&`, pipes or
-   variables. For example: `grep -rn "def parse" src` or
-   `find tests -name "*.py"`.
+   exist only with single read-only search commands: `grep -n`, `grep -rn` or
+   `grep -rl`, `ls`, and `find` without `-exec` or `-delete`. Quote patterns,
+   use literal paths inside the project, and never add `cd`, `;`, `&&`, pipes
+   or variables. For example: `grep -rn "def parse" src` or
+   `find tests -name "*.py"`. When you need only part of a file, `grep -n`
+   first, then Read only that range with `offset` and `limit`.
 2. **Changing files:** make every file change with Edit or Write. Never use
    heredocs, `cat >`, `sed -i`, `cp`, `mv` or interpreter scripts (such as
    `python -c` or `node -e`) to create, change, copy or move a file.
@@ -59,8 +60,10 @@ prompts, and they apply in every step below.
    the test runner or the commands on your own. If the SPEC has no
    `## Commands` section, or it has no `Test:` line, record the task as
    **BLOCKED (missing command)** and stop.
-4. If you need more detail on the feature, read the rest of the SPEC.
-   Otherwise do not.
+4. The rest of the SPEC beyond `## Commands` is optional. Read only the
+   sections you need, and never read the whole file for background. Always
+   read the `## Acceptance criteria` entries named in your task's `covers:`
+   line, even when you read nothing else from the SPEC.
 
 ## Step 2: Validate scope (do this before writing anything)
 
@@ -100,19 +103,27 @@ code runs without throwing, and not a tautology.
 
 Run each command exactly as written in `## Commands`, one per Bash call:
 
-1. **Single test** (skip when it is `none`): replace `{file}` with the path of
-   the test file you wrote, and run it.
-2. **Test:** run the whole suite, so you know you have not broken anything
-   else.
-3. **Type-check** (skip when it is `none`): run it.
+1. **Single test** first: replace `{file}` with the path of the test file you
+   wrote, and run it. If it fails, fix the **code** and re-run it until it
+   passes. When Single test is `none`, run Test here instead (fix and re-run
+   it until it passes) and skip item 2.
+2. **Test:** run the whole suite once, so you know you have not broken
+   anything else.
+3. **Type-check** (skip when it is `none`): run it once.
 
 Record each exact command you ran for the log.
 
+Re-run the full suite only after a fix that follows a suite or type-check
+failure. Then run the commands again in the same order: the Single test
+before it and the Type-check after it. Do not re-run the full suite after any
+other fix.
+
 If a command fails because of your code or your test, fix the **code** and
-re-run, up to 3 attempts. If an existing test now fails because of your change,
-fix your change — do not touch the existing test. If a command fails for an
-environment reason, follow Tool rule 5: record **BLOCKED (environment)** and
-stop.
+re-run, up to 3 attempts. Every fix counts toward the 3-attempt cap, whether
+it follows a Single test, suite or type-check failure. If an existing test now
+fails because of your change, fix your change — do not touch the existing
+test. If a command fails for an environment reason, follow Tool rule 5: record
+**BLOCKED (environment)** and stop.
 
 If the task's test, the full suite or the type-check still fails after 3
 attempts, do NOT claim success — record the failure in the log and stop.

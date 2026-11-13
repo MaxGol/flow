@@ -20,10 +20,13 @@ prompts, and they apply in every step below.
 
 1. **Reading and searching:** read files only with Read. Never use `cat`,
    `sed`, `head` or `tail` through Bash. Search, list and check that files
-   exist only with single read-only search commands: `grep -rn` or `grep -rl`,
-   `ls`, and `find` without `-exec` or `-delete`. Quote patterns and use
-   literal paths inside the project. For example: `grep -rn "def parse" src`
-   or `find tests -name "*.py"`.
+   exist only with single read-only search commands: `grep -rn`, `grep -rl`
+   or `grep -n`, `ls`, and `find` without `-exec` or `-delete`. Quote patterns
+   and use literal paths inside the project. For example:
+   `grep -rn "def parse" src` or `find tests -name "*.py"`. When you need only
+   part of a file, `grep -n` first, then Read only that range with `offset`
+   and `limit`. The exception: each task's test file and every file listed
+   under "Files changed" in its log are always read in full.
 2. **No file changes:** make no file changes of any kind. You have no Write or
    Edit tool, and you must not use Bash to create, change, copy, move or delete
    a file either (no redirects, no heredocs, no `sed -i`, no `cp`, `mv` or
@@ -75,6 +78,9 @@ prompts, and they apply in every step below.
    on your own. If the SPEC has no `## Commands` section or no Test command,
    do not invent one: record "not run — SPEC has no Test command" and list it
    as a failure in the verdict.
+   Run Test once and Type-check once. Do not re-run the full suite to look
+   into a failure — work from the output you have, or use the SPEC's
+   **Single test** command on one file.
 2. Record the exact commands, the pass/fail counts, and any failures verbatim.
 3. A green suite is necessary but NOT sufficient — it does not prove the SPEC
    is met. Continue regardless of the result.

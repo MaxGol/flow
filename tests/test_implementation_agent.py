@@ -107,6 +107,30 @@ class ToolRulesTest(AgentFileTest):
         self.assertIn("**BLOCKED**", rule)
         self.assertIn("Do not invent, substitute or repair a command", rule)
 
+    def test_a_partial_reads_grep_n_first_then_read_a_range(self):
+        rule = self.rule_with("read files only with Read")
+        self.assertIn("`grep -n`", rule)
+        self.assertIn("only part of a file", rule)
+        self.assertIn("`offset`", rule)
+        self.assertIn("`limit`", rule)
+        self.assertIn(
+            "When you need only part of a file, `grep -n` first, then Read only "
+            "that range with `offset` and `limit`",
+            rule,
+        )
+
+    def test_a_grep_n_is_an_allowed_read_only_command(self):
+        rule = self.rule_with("Search, list and check that files exist only with")
+        allowed = rule.split("single read-only search commands:", 1)[1].split(".", 1)[0]
+        self.assertIn("`grep -n`", allowed)
+
+    def test_file_has_no_line_count_check(self):
+        self.assertNotIn("wc -l", self.text)
+
+    def test_c_rule_3_still_forbids_extra_flags(self):
+        rule = self.rule_with("use Bash only for the commands in the SPEC's `## Commands`")
+        self.assertIn("Do not add flags, arguments, prefixes or environment variables", rule)
+
     def test_tool_rules_come_before_the_steps(self):
         self.assertLess(self.text.index("## Tool rules"), self.text.index("## Step 1"))
 
@@ -158,7 +182,7 @@ class CommandsFromSpecTest(AgentFileTest):
         run = prompt_files.section(self.text, "4b. Run the commands, in this order")
         items = numbered_items(run)
         self.assertEqual(len(items), 3)
-        self.assertTrue(items[0].startswith("**Single test** (skip when it is `none`)"))
+        self.assertTrue(items[0].startswith("**Single test** first"))
         self.assertIn("replace `{file}` with the path of the test file", items[0])
         self.assertTrue(items[1].startswith("**Test:**"))
         self.assertTrue(items[2].startswith("**Type-check** (skip when it is `none`)"))
@@ -173,6 +197,86 @@ class CommandsFromSpecTest(AgentFileTest):
     def test_keeps_never_weaken_a_test_guarantee(self):
         self.assertIn("**Never make a test pass by weakening it.**", self.text)
         self.assertIn("real test in the project's own test framework", self.text)
+
+
+class SingleTestFirstTest(AgentFileTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        run = prompt_files.section(cls.text, "4b. Run the commands, in this order")
+        cls.step = prompt_files.flatten(run)
+        cls.items = numbered_items(run)
+        # The last item runs to the end of the section; keep only its own paragraph.
+        cls.type_check_item = cls.items[2].split("Record each exact command", 1)[0]
+
+    def test_three_items_in_order_single_test_test_type_check(self):
+        self.assertEqual(len(self.items), 3)
+        self.assertTrue(self.items[0].startswith("**Single test**"))
+        self.assertTrue(self.items[1].startswith("**Test:**"))
+        self.assertTrue(self.items[2].startswith("**Type-check**"))
+
+    def test_single_test_reruns_until_it_passes(self):
+        self.assertIn("fix the **code** and re-run it until it passes", self.items[0])
+
+    def test_test_takes_single_tests_place_when_it_is_none(self):
+        self.assertIn("When Single test is `none`, run Test here instead", self.items[0])
+        self.assertIn("skip item 2", self.items[0])
+
+    def test_suite_and_type_check_run_once(self):
+        self.assertIn("run the whole suite once", self.items[1])
+        self.assertIn("run it once", self.type_check_item)
+
+    def test_full_suite_reruns_only_after_suite_or_type_check_failure_fix(self):
+        self.assertIn(
+            "Re-run the full suite only after a fix that follows a suite or type-check failure",
+            self.step,
+        )
+        self.assertIn("the Single test before it and the Type-check after it", self.step)
+        self.assertIn("Do not re-run the full suite after any other fix", self.step)
+
+    def test_every_fix_counts_toward_the_cap(self):
+        self.assertIn("Every fix counts toward the 3-attempt cap", self.step)
+
+    def test_keeps_attempt_cap_blocked_and_done_sentences(self):
+        self.assertIn("up to 3 attempts", self.step)
+        self.assertIn("**BLOCKED (environment)**", self.step)
+        self.assertIn(
+            "If the task's test, the full suite or the type-check still fails after 3 "
+            "attempts, do NOT claim success — record the failure in the log and stop.",
+            self.step,
+        )
+        self.assertIn(
+            "Only report `done` if a real test was written AND it passed AND the full "
+            "suite passed AND the type-check passed (or is `none`).",
+            self.step,
+        )
+
+
+class SpecSectionsTest(AgentFileTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        step1 = prompt_files.section(cls.text, "Step 1: Read your context")
+        cls.items = numbered_items(step1)
+        cls.spec_item = cls.items[3]
+
+    def test_step_1_keeps_four_items(self):
+        self.assertEqual(len(self.items), 4)
+
+    def test_spec_beyond_commands_is_optional(self):
+        self.assertIn("The rest of the SPEC beyond `## Commands` is optional", self.spec_item)
+        self.assertIn("Read only the sections you need", self.spec_item)
+
+    def test_never_reads_the_whole_spec_for_background(self):
+        self.assertIn("never read the whole file for background", self.spec_item)
+        self.assertNotIn("read the rest of the SPEC", self.spec_item)
+
+    def test_always_reads_acceptance_criteria_named_on_covers_line(self):
+        self.assertIn(
+            "Always read the `## Acceptance criteria` entries named in your task's "
+            "`covers:` line, even when you read nothing else from the SPEC",
+            self.spec_item,
+        )
 
 
 class LogTemplateTest(AgentFileTest):

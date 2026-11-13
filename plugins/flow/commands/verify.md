@@ -69,15 +69,21 @@ If it has no `## Commands` section:
    `angular.json`, `tsconfig.json`, `Cargo.toml` or `go.mod` — and the
    existing test files. Each command must run from the project root with no
    `cd`; where one needs a subdirectory, use the tool's own directory flag
-   (e.g. `pnpm -C frontend test`).
+   (e.g. `pnpm -C frontend test`). Choose the runner's non-watch, CI-mode
+   command with its quietest reporter that still prints failures and a
+   summary. Check the project's config or the runner's options for the right
+   flag. Never choose a watch-mode command: it never exits. For example:
+   `npx vitest run --reporter=dot`, `npx jest --ci --silent`, `pytest -q`,
+   `go test ./...`, `cargo test -q` or
+   `npx ng test --watch=false --browsers=ChromeHeadless --reporters=dots`.
 2. Write the block into `BASE/SPEC.md` with Edit, just before
    `## Acceptance criteria`, in exactly this format:
 
 ```markdown
 ## Commands
 Run from the project root.
-- Test: [whole test suite, e.g. `npm test`]
-- Single test: [one test file, with a `{file}` placeholder, e.g. `npx vitest run {file}` — or "none"]
+- Test: [whole test suite, e.g. `npx vitest run --reporter=dot`]
+- Single test: [one test file, with a `{file}` placeholder, e.g. `npx vitest run --reporter=dot {file}` — or "none"]
 - Type-check: [e.g. `npx tsc --noEmit` — or "none"]
 - Build: [e.g. `npm run build` — or "none"]
 ```

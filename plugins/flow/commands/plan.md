@@ -40,7 +40,13 @@ a new feature never disturbs an existing one.
   subdirectory, use the tool's own directory flag instead (e.g.
   `pnpm -C frontend test`, `npm --prefix frontend test`,
   `pytest backend/tests`). Write "none" for Single test, Type-check or Build
-  when the project has no such command.
+  when the project has no such command. Choose the runner's non-watch,
+  CI-mode command with its quietest reporter that still prints failures and
+  a summary. Check the project's config or the runner's options for the
+  right flag. Never choose a watch-mode command: it never exits. For
+  example: `npx vitest run --reporter=dot`, `npx jest --ci --silent`,
+  `pytest -q`, `go test ./...`, `cargo test -q` or
+  `npx ng test --watch=false --browsers=ChromeHeadless --reporters=dots`.
 
 ## Tool rules
 
@@ -94,6 +100,13 @@ reading the project's config yourself — for example `package.json` scripts,
 - **Build:** the build command — or "none".
 
 Each must run from the project root with no `cd` (see Rules).
+
+Choose the runner's non-watch, CI-mode command with its quietest reporter
+that still prints failures and a summary. Check the project's config or the
+runner's options for the right flag. Never choose a watch-mode command: it
+never exits. For example: `npx vitest run --reporter=dot`,
+`npx jest --ci --silent`, `pytest -q`, `go test ./...`, `cargo test -q` or
+`npx ng test --watch=false --browsers=ChromeHeadless --reporters=dots`.
 
 ## Step 2: Propose the breakdown
 
@@ -151,8 +164,8 @@ confirmed by the user. Each runs from the project root as written, with no
 `cd`; use the tool's own directory flag where needed (e.g.
 `pnpm -C frontend test`). Write "none" when the project has no such command.]
 Run from the project root.
-- Test: [whole test suite, e.g. `npm test`]
-- Single test: [one test file, with a `{file}` placeholder, e.g. `npx vitest run {file}` — or "none"]
+- Test: [whole test suite, e.g. `npx vitest run --reporter=dot`]
+- Single test: [one test file, with a `{file}` placeholder, e.g. `npx vitest run --reporter=dot {file}` — or "none"]
 - Type-check: [e.g. `npx tsc --noEmit` — or "none"]
 - Build: [e.g. `npm run build` — or "none"]
 
@@ -188,6 +201,11 @@ Status legend: [ ] todo · [>] in progress · [x] done · [v] verified
   - Verification: [the behaviour a real test must confirm]
   - covers: [AC3]
 ```
+
+Task descriptions must not tell the agent to read whole archive files (such
+as "read the M1 archive first"). Name the exact facts or paths the agent
+needs instead — for example "`parseDate` in `src/date.ts` returns `null` on
+bad input".
 
 ## Step 4: Confirm
 

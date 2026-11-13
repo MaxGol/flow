@@ -123,6 +123,99 @@ class CommandRulesTest(PlanFileTest):
         self.assertIn("ask the user to confirm or correct them", step2)
 
 
+QUIET_RULE = (
+    "Choose the runner's non-watch, CI-mode command with its quietest reporter "
+    "that still prints failures and a summary."
+)
+WATCH_RULE = "Never choose a watch-mode command: it never exits."
+
+# Known test runner names. An example command counts towards a runner when one
+# of its words is in this set, so the examples can change without the test
+# pinning one exact list.
+KNOWN_RUNNERS = {
+    "vitest", "jest", "mocha", "karma", "ng", "jasmine", "ava", "playwright",
+    "cypress", "pytest", "unittest", "nose2", "tox", "go", "cargo", "rspec",
+    "minitest", "phpunit", "dotnet", "mvn", "gradle", "mix", "deno", "bun",
+}
+
+
+def example_runners(flat_text):
+    """Return the distinct runners named in the code spans of the sentence that
+    starts at the first "for example" (case-insensitive) in flat_text."""
+    match = re.search(r"(?i)for example:?((?:[^`.]|`[^`]*`)*)", flat_text)
+    if match is None:
+        return set()
+    runners = set()
+    for span in re.findall(r"`([^`]+)`", match.group(1)):
+        for word in span.split():
+            if word in KNOWN_RUNNERS:
+                runners.add(word)
+                break
+    return runners
+
+
+class QuietCommandRuleTest(PlanFileTest):
+    """The quiet, non-watch command rule comes first, then runner examples."""
+
+    def assert_rule_then_examples(self, flat):
+        self.assertIn(QUIET_RULE, flat)
+        self.assertIn(WATCH_RULE, flat)
+        rule_at = flat.index(QUIET_RULE)
+        watch_at = flat.index(WATCH_RULE, rule_at)
+        self.assertLess(rule_at, watch_at)
+        after = flat[watch_at + len(WATCH_RULE):]
+        self.assertRegex(after, r"(?i)^\s*for example")
+        runners = example_runners(after)
+        self.assertGreaterEqual(
+            len(runners), 3, "expected 3+ runners after 'for example', got %r" % runners
+        )
+
+    def test_rules_state_quiet_rule_then_examples(self):
+        rules = prompt_files.flatten(prompt_files.section(self.text, "Rules"))
+        self.assert_rule_then_examples(rules)
+
+    def test_step1_states_quiet_rule_then_examples(self):
+        step1 = prompt_files.flatten(
+            prompt_files.section(self.text, "Step 1: Understand the feature")
+        )
+        self.assert_rule_then_examples(step1)
+
+    def test_rules_tell_planner_to_check_config_for_flag(self):
+        rules = prompt_files.flatten(prompt_files.section(self.text, "Rules"))
+        self.assertIn(
+            "Check the project's config or the runner's options for the right flag.",
+            rules,
+        )
+
+    def test_example_runner_counting_ignores_unknown_commands(self):
+        flat = "for example `npm test`, `make check` or `pytest -q`. `jest` later"
+        self.assertEqual(example_runners(flat), {"pytest"})
+
+
+class SpecTemplateQuietCommandsTest(PlanFileTest):
+    def test_template_commands_use_quiet_vitest_examples(self):
+        commands = template_section(spec_template(self.text), "Commands")
+        entries = dict(
+            re.match(r"^- (Test|Single test): (.+)$", line).groups()
+            for line in commands.splitlines()
+            if re.match(r"^- (Test|Single test): ", line)
+        )
+        self.assertIn("`npx vitest run --reporter=dot`", entries["Test"])
+        self.assertIn("`npx vitest run --reporter=dot {file}`", entries["Single test"])
+
+
+class TaskDescriptionTest(PlanFileTest):
+    def test_step3_forbids_reading_whole_archive_files(self):
+        step3 = prompt_files.flatten(
+            prompt_files.section(self.text, "Step 3: Write the files")
+        )
+        self.assertIn(
+            "Task descriptions must not tell the agent to read whole archive files",
+            step3,
+        )
+        self.assertIn("Name the exact facts or paths the agent needs instead", step3)
+
+
 class ToolRulesTest(PlanFileTest):
     @classmethod
     def setUpClass(cls):

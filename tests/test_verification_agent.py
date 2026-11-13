@@ -98,6 +98,25 @@ class ToolRulesTest(AgentFileTest):
         rule = self.rule_with("never run `aws`")
         self.assertIn("never run anything that reaches a staging or production system", rule)
 
+    def test_a_partial_reads_use_grep_n_then_offset_and_limit(self):
+        rule = self.rule_with("read files only with Read")
+        self.assertIn("`grep -n`", rule)
+        self.assertIn("only part of a file", rule)
+        self.assertIn("`offset`", rule)
+        self.assertIn("`limit`", rule)
+        self.assertLess(rule.index("only part of a file"), rule.index("`offset`"))
+
+    def test_a_test_file_and_files_changed_always_read_in_full(self):
+        rule = self.rule_with("read files only with Read")
+        self.assertIn(
+            "each task's test file and every file listed under \"Files changed\" "
+            "in its log are always read in full",
+            rule,
+        )
+
+    def test_tool_rules_still_have_four_items(self):
+        self.assertEqual(len(self.items), 4)
+
     def test_tool_rules_come_before_the_steps(self):
         self.assertLess(self.text.index("## Tool rules"), self.text.index("## Step 1"))
 
@@ -108,6 +127,12 @@ class CommandsFromSpecTest(AgentFileTest):
         self.assertIn("Run the SPEC's **Test** command", step2)
         self.assertIn("**Type-check** command, unless it is `none`", step2)
         self.assertIn("Do not work out a test command on your own", step2)
+
+    def test_test_and_type_check_run_once_and_suite_not_rerun_for_failures(self):
+        step2 = prompt_files.flatten(prompt_files.section(self.text, "Step 2: Re-run the full test suite"))
+        self.assertIn("Run Test once and Type-check once", step2)
+        self.assertIn("Do not re-run the full suite to look into a failure", step2)
+        self.assertIn("**Single test** command on one file", step2)
 
 
 class UnverifiedTest(AgentFileTest):

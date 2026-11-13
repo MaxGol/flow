@@ -9,6 +9,7 @@ import unittest
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import prompt_files  # noqa: E402
+from test_plan_command import QUIET_RULE, WATCH_RULE, example_runners  # noqa: E402
 
 COMMAND = prompt_files.command_path("implement")
 
@@ -115,6 +116,93 @@ class MissingCommandsTest(ImplementFileTest):
         mark_at = self.flat.index("change this task's checkbox to `[>]`")
         self.assertLess(guard_at, commands_at)
         self.assertLess(commands_at, mark_at)
+
+
+class QuietCommandRuleTest(ImplementFileTest):
+    """Step 2 states the quiet, non-watch command rule, then runner examples."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.raw_step = step_section(cls.text, "Step 2")
+        cls.step = prompt_files.flatten(cls.raw_step)
+
+    def test_rule_and_watch_sentence_then_examples_from_three_runners(self):
+        self.assertIn(QUIET_RULE, self.step)
+        self.assertIn(WATCH_RULE, self.step)
+        rule_at = self.step.index(QUIET_RULE)
+        watch_at = self.step.index(WATCH_RULE, rule_at)
+        after = self.step[watch_at + len(WATCH_RULE):]
+        self.assertRegex(after, r"(?i)^\s*for example")
+        runners = example_runners(after)
+        self.assertGreaterEqual(
+            len(runners), 3, "expected 3+ runners after 'for example', got %r" % runners
+        )
+
+    def test_tells_orchestrator_to_check_config_for_flag(self):
+        self.assertIn(
+            "Check the project's config or the runner's options for the right flag.",
+            self.step,
+        )
+
+    def test_block_template_uses_quiet_vitest_examples(self):
+        entries = dict(
+            re.match(r"^- (Test|Single test): (.+)$", line).groups()
+            for line in self.raw_step.splitlines()
+            if re.match(r"^- (Test|Single test): ", line)
+        )
+        self.assertIn("`npx vitest run --reporter=dot`", entries["Test"])
+        self.assertIn("`npx vitest run --reporter=dot {file}`", entries["Single test"])
+
+
+class CurrentDetailsTest(ImplementFileTest):
+    """Step 4 copies only this task's lines and summarises pointers."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.step = prompt_files.flatten(step_section(cls.text, "Step 4"))
+        details = re.search(
+            r"## Details(.*?)## Scope", step_section(cls.text, "Step 4"), re.S
+        )
+        cls.details = prompt_files.flatten(details.group(1))
+
+    def test_details_copy_verification_and_covers_verbatim(self):
+        self.assertIn(
+            "Copy only this task's description from TASKS.md, with its "
+            "`Verification:` and `covers:` lines verbatim",
+            self.details,
+        )
+
+    def test_pointer_replaced_by_summary_of_at_most_five_lines(self):
+        self.assertIn(
+            "points at earlier tasks' archives or at the SPEC, do not pass that "
+            "pointer on",
+            self.details,
+        )
+        self.assertIn("in at most 5 lines", self.details)
+        self.assertIn(
+            "Full notes: <path>. Read only if the summary isn't enough.", self.details
+        )
+
+    def test_forbids_reading_whole_archive_or_whole_spec(self):
+        self.assertIn(
+            "CURRENT.md never tells the agent to read a whole archive file or the "
+            "whole SPEC",
+            self.step,
+        )
+
+    def test_previous_attempts_still_read_first(self):
+        attempts = re.search(
+            r"## Previous attempts(.*?)## Implementation Log",
+            step_section(self.text, "Step 4"),
+            re.S,
+        )
+        self.assertIn(
+            "list their paths and tell the agent to read them first so it does not "
+            "repeat the same failure",
+            prompt_files.flatten(attempts.group(1)),
+        )
 
 
 class ArchiveAndEvidenceTest(ImplementFileTest):
