@@ -62,19 +62,22 @@ Quality is enforced in two layers. Each layer catches what the other cannot.
 
 Neither agent works out how to run your tests on its own. Every SPEC carries a
 `## Commands` section with the exact commands for the feature, each run from
-the project root with no `cd`:
+the project root with no `cd`. For a project that uses vitest, for example:
 
 ```markdown
 ## Commands
 Run from the project root.
-- Test: `npm test`
-- Single test: `npx vitest run {file}`
+- Test: `npx vitest run --reporter=dot`
+- Single test: `npx vitest run --reporter=dot {file}`
 - Type-check: `npx tsc --noEmit`
 - Build: `npm run build`
 ```
 
 `/flow:plan` works these out from your project config and shows them to you
-with the task breakdown. The implementation and verification agents run them
+with the task breakdown. Whatever your runner, it picks the runner's
+non-watch, CI-mode command with its quietest reporter that still prints
+failures and a summary, so a test run costs few tokens and a failure is still
+readable. A watch-mode command is never chosen: it never exits. The implementation and verification agents run them
 exactly as written — replacing `{file}` with a test file path is the only
 edit allowed — one command per Bash call, with no `cd`, `;`, `&&`, pipes,
 redirects or shell variables added. That keeps every Bash call a single,
@@ -111,11 +114,15 @@ single read-only searches (`grep -rn`, `ls`, `find`) and the SPEC's
    "Does not throw" and tautologies do not count. Throwaway "run it and print
    PASS" scripts are never acceptable.
 3. **Run the task's test** with the SPEC's `Single test:` command, fixing the
-   *code* and re-running on failure, up to three attempts.
-4. **Run the full suite** with the SPEC's `Test:` command (then `Type-check:`,
-   unless it is `none`), so a regression elsewhere is caught before the task
-   is marked built. If an existing test breaks, the agent fixes its own change,
-   not the existing test.
+   *code* and re-running the Single test until it passes. Every fix counts
+   toward a cap of three attempts.
+4. **Then run the full suite once** with the SPEC's `Test:` command, and
+   `Type-check:` once (unless it is `none`), so a regression elsewhere is
+   caught before the task is marked built. The suite is re-run only after a
+   fix that follows a suite or type-check failure. If an existing test breaks,
+   the agent fixes its own change, not the existing test. When `Single test:`
+   is `none`, the `Test:` command takes its place in step 3 and no separate
+   suite run follows.
 5. **Never weaken a test to get green** — no deleting or loosening assertions,
    no skipping, no special-casing product code to satisfy the test. The only
    legitimate edit to a test is that it did not match the `Verification:`
@@ -167,9 +174,11 @@ what would confirm it.
 1. **Reads the contract**: the numbered `## Acceptance criteria` in `SPEC.md`,
    the `Verification:` line on each built task, and each task's archived
    Implementation Log (which test file it wrote, which commands it ran).
-2. **Re-runs the full suite** itself with the SPEC's `Test:` command (and
-   `Type-check:`, unless it is `none`) and records the exact commands and
-   counts. Green is necessary, not sufficient — it continues regardless.
+2. **Re-runs the full suite once** itself with the SPEC's `Test:` command (and
+   `Type-check:` once, unless it is `none`) and records the exact commands and
+   counts. It does not re-run the suite to look into a failure; it works from
+   the output it has, or runs `Single test:` on one file. Green is necessary,
+   not sufficient — it continues regardless.
 3. **Audits each task's test**: the file exists, it calls the real code, and
    it asserts the behaviour the `Verification:` line promised. A missing,
    skipped, or hollow test fails the audit even if the product code looks
@@ -283,8 +292,13 @@ own isolated folder, so working on one feature never disturbs another:
   `Verification:` line and the acceptance criteria it covers. The single
   source of truth for what is left to build.
 - **CURRENT.md** — disposable scratch context for the one task being built
-  right now. The orchestrator writes the task into it (plus links to any
-  previous failed attempts); the sub-agent reads it and logs its work back.
+  right now. The orchestrator copies only this task's description into it,
+  with its `Verification:` and `covers:` lines verbatim, plus links to any
+  previous failed attempts. Where the task depends on earlier tasks or the
+  SPEC, it adds a short summary of the facts the agent needs (at most 5
+  lines) and an optional "Full notes: <path>" line, instead of telling the
+  agent to read whole archive files or the whole SPEC. The sub-agent reads it
+  and logs its work back.
   Archived and reset at the end of every run, pass or fail.
 - **VERIFY.md** — the verification agent's verdict. Overwritten by each
   `/flow:verify` run; the previous one moves to `archive/`.

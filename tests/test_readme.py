@@ -131,6 +131,74 @@ class ReadmeBehaviourTest(ReadmeTest):
         self.assertIn("BLOCKED (environment)", self.flat)
 
 
+class ReadmeTokenEfficiencyTest(ReadmeTest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.commands = prompt_files.section(cls.text, "Commands come from the SPEC")
+        cls.commands_flat = prompt_files.flatten(cls.commands)
+        cls.layer1_flat = prompt_files.flatten(
+            prompt_files.section(cls.text, "Layer 1: every task ships with a real test")
+        )
+        cls.layer2_flat = prompt_files.flatten(
+            prompt_files.section(cls.text, "Layer 2: independent verification of the whole feature")
+        )
+        cls.state_flat = prompt_files.flatten(prompt_files.section(cls.text, "State files"))
+
+    def numbered_item(self, flat_section, number):
+        match = re.search(
+            r"(?:^|\s)%d\. (.*?)(?=\s%d\. |$)" % (number, number + 1), flat_section
+        )
+        self.assertIsNotNone(match, "no numbered item %d" % number)
+        return match.group(1)
+
+    def test_describes_the_quiet_command_rule(self):
+        self.assertIn(
+            "non-watch, CI-mode command with its quietest reporter that still "
+            "prints failures and a summary",
+            self.commands_flat,
+        )
+        self.assertIsNotNone(
+            re.search(r"watch-mode command is never chosen", self.commands_flat)
+        )
+        self.assertIn("it never exits", self.commands_flat)
+
+    def test_commands_example_uses_quiet_vitest_and_no_single_default(self):
+        self.assertIn("- Test: `npx vitest run --reporter=dot`", self.commands)
+        self.assertIn("- Single test: `npx vitest run --reporter=dot {file}`", self.commands)
+        self.assertNotIn("- Test: `npm test`", self.commands)
+        self.assertIn("for example", self.commands_flat)
+        self.assertNotIn("default", self.commands_flat.lower())
+        # At most two example commands per role in the section's code block.
+        block = re.search(r"```markdown\n(.*?)```", self.commands, re.S).group(1)
+        self.assertLessEqual(len(re.findall(r"(?m)^- Test:", block)), 1)
+        self.assertLessEqual(len(re.findall(r"(?m)^- Single test:", block)), 1)
+
+    def test_single_test_runs_until_it_passes_before_suite_runs_once(self):
+        item3 = self.numbered_item(self.layer1_flat, 3)
+        item4 = self.numbered_item(self.layer1_flat, 4)
+        self.assertIn("`Single test:`", item3)
+        self.assertIn("until it passes", item3)
+        self.assertIn("Then run the full suite once", item4)
+        self.assertIn("`Type-check:` once", item4)
+        self.assertIn(
+            "re-run only after a fix that follows a suite or type-check failure", item4
+        )
+
+    def test_verifier_runs_the_suite_once(self):
+        section = self.layer2_flat.split("**What the verifier does.**", 1)[1]
+        item2 = self.numbered_item(section, 2)
+        self.assertIn("Re-runs the full suite once", item2)
+        self.assertIn("does not re-run the suite to look into a failure", item2)
+
+    def test_current_md_has_summary_and_optional_full_notes_path(self):
+        current = self.state_flat.split("**CURRENT.md**", 1)[1].split("**VERIFY.md**", 1)[0]
+        self.assertIn('"Full notes: <path>"', current)
+        self.assertIn("optional", current)
+        self.assertIn("short summary", current)
+        self.assertIn("instead of telling the agent to read whole archive files", current)
+
+
 class ReadmeToolSetsTest(ReadmeTest):
     def test_no_glob_or_grep_tool_anywhere(self):
         self.assertIsNone(re.search(r"\b(Glob|Grep)\b", self.text))
