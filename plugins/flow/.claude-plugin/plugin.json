@@ -1,6 +1,6 @@
 {
   "name": "flow",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A minimal agentic pipeline for Claude Code: spike, plan, implement task by task with a real test per task, then verify independently against the SPEC. Inspired by Belmont, reimplemented Claude-only.",
   "author": {
     "name": "Max Golubev"
